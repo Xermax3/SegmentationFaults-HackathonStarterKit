@@ -38,7 +38,7 @@ passport.use(new GitHubStrategy({
 ));
 
 // Auth Routes
-app.get("/oauth/github", passport.authenticate("github", { scope: ["user:email"] }));
+app.get("/oauth/github", passport.authenticate("github", { scope: ["user:email"], failureRedirect: "/" }));
 
 app.get("/oauth/github/callback",
   passport.authenticate("github", { failureRedirect: "/" }),
