@@ -9,6 +9,7 @@ import flaskLogo from './assets/flask.svg'
 import vercelLogo from './assets/vercel.svg'
 import netlifyLogo from './assets/netlify.svg'
 import herokuLogo from './assets/heroku.svg'
+import axios from 'axios'
 
 function App() {
   const [frontend, setFrontend] = useState('')
@@ -41,6 +42,13 @@ function App() {
     if (type === 'frontend') setFrontend(value)
     if (type === 'backend') setBackend(value)
     if (type === 'deployment') setDeployment(value)
+  }
+
+
+  const submitProjectData = async () => {
+    const res = await axios.get('/test-endpoint');
+    const data = await res.json();
+    console.log(data);
   }
 
   return (
@@ -101,7 +109,7 @@ function App() {
         <div className="form-navigation">
           {step > 1 && <button type="button" onClick={prevStep}>Back</button>}
           {step < 3 && <button type="button" onClick={nextStep}>Next</button>}
-          {step === 3 && <button type="submit">Submit</button>}
+          {step === 3 && <button type="submit" onClick={submitProjectData}>Submit</button>}
         </div>
       </form>
     </div>
