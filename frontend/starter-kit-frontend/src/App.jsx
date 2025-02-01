@@ -1,34 +1,44 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [frontend, setFrontend] = useState('')
+  const [backend, setBackend] = useState('')
+  const [deployment, setDeployment] = useState('')
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className="app-container">
+      <h1>Project Setup</h1>
+      <form className="form">
+        <div className="form-group">
+          <label htmlFor="frontend">Frontend</label>
+          <select id="frontend" value={frontend} onChange={(e) => setFrontend(e.target.value)}>
+            <option value="">Select Frontend</option>
+            <option value="react">React</option>
+            <option value="vue">Vue</option>
+            <option value="angular">Angular</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label htmlFor="backend">Backend</label>
+          <select id="backend" value={backend} onChange={(e) => setBackend(e.target.value)}>
+            <option value="">Select Backend</option>
+            <option value="node">Node.js</option>
+            <option value="django">Django</option>
+            <option value="flask">Flask</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label htmlFor="deployment">Deployment</label>
+          <select id="deployment" value={deployment} onChange={(e) => setDeployment(e.target.value)}>
+            <option value="">Select Deployment</option>
+            <option value="vercel">Vercel</option>
+            <option value="netlify">Netlify</option>
+            <option value="heroku">Heroku</option>
+          </select>
+        </div>
+      </form>
+    </div>
   )
 }
 
