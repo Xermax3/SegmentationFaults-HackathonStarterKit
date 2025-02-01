@@ -30,7 +30,7 @@ passport.deserializeUser((user, done) => done(null, user));
 passport.use(new GitHubStrategy({
     clientID: process.env['GITHUB_APP_CLIENT_ID'],
     clientSecret: process.env['GITHUB_APP_CLIENT_SECRET'],
-    callbackURL: `${process.env['GITHUB_APP_CALLBACK_URL']}/oauth/github/callback`
+    callbackURL: process.env['GITHUB_APP_CALLBACK_URL'] + '/oauth/github/callback'
   },
   (accessToken, refreshToken, profile, done) => {
     return done(null, profile);
@@ -41,8 +41,8 @@ passport.use(new GitHubStrategy({
 app.get("/oauth/github", passport.authenticate("github", { scope: ["user:email"] }));
 
 app.get("/oauth/github/callback",
-  passport.authenticate("github", { failureRedirect: "http://localhost:5173" }),
-  (req, res) => res.redirect("https://google.ca")
+  passport.authenticate("github", { failureRedirect: "/" }),
+  (req, res) => res.redirect("/")
 );
 
 // // Main route
