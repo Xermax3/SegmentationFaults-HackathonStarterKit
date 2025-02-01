@@ -1,17 +1,21 @@
+require('dotenv').config();
+
 const express = require("express");
 const path = require("path");
 const axios = require("axios");
 
 const app = express();
 
+var passport = require("passport");
+
 // Serve the static files from the React app
 app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
 // GitHub vars
-var gitHubStrategy = require("passport-github").Strategy;
+var GitHubStrategy = require("passport-github");
 
 // Passport init
-passport.use(new gitHubStrategy({
+passport.use(new GitHubStrategy({
   clientID: process.env.GITHUB_CLIENT_ID,
   clientSecret: process.env.GITHUB_CLIENT_SECRET,
   callbackURL: "http://localhost:4000/auth/github/callback"
