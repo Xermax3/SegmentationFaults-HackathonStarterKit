@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './App.css'
+import axios from 'axios'
 import reactLogo from './assets/react.svg'
 import vueLogo from './assets/vue.svg'
 import angularLogo from './assets/angular.svg'
@@ -23,6 +24,26 @@ function App() {
     window.location.replace(`http://localhost:4000/oauth/github`)
   }
 
+  const handleSelection = (type, value) => {
+    if (type === 'frontend') setFrontend(frontend === value ? '' : value)
+    if (type === 'backend') setBackend(backend === value ? '' : value)
+    if (type === 'deployment') setDeployment(deployment === value ? '' : value)
+  }
+
+  const submitProjectData = async () => {
+    try {
+      await axios.post('http://localhost:4000/send-project-details', {
+        frontend: frontend || null,
+        backend: backend || null,
+        deployment: deployment || null
+      })
+      alert('Project details submitted successfully')
+    } catch (error) {
+      console.error(error)
+      alert('An error occurred while submitting project details')
+    }
+  }
+
   const options = {
     frontend: [
       { name: 'React', logo: reactLogo },
@@ -41,78 +62,73 @@ function App() {
     ]
   }
 
-
-  const handleSelection = (type, value) => {
-    if (type === 'frontend') setFrontend(value)
-    if (type === 'backend') setBackend(value)
-    if (type === 'deployment') setDeployment(value)
-  }
-
   return (
     <div className="app-container">
       <h1>Project Setup</h1>
-      <button 
+       <button 
         type="button"
         onClick={handleGitHubLogin}
-        className="github-login" >
-        Login with GitHub
-      </button>
-      <form className="form">
+        className="github-login">
+          Login with Github
+        </button>
+      <div className="form">
         {step === 1 && (
-
-           <div className="form-group">
-             <label>Frontend</label>
-             <div className="options">
-               {options.frontend.map(option => (
-                 <div
-                   key={option}
-                   className={`option ${frontend === option ? 'selected' : ''}`}
-                   onClick={() => handleSelection('frontend', option)}
-                 >
-                   {option}
-                 </div>
-               ))}
-             </div>
-           </div>
-         )}
-         {step === 2 && (
-           <div className="form-group">
-             <label>Backend</label>
-             <div className="options">
-               {options.backend.map(option => (
-                 <div
-                   key={option}
-                   className={`option ${backend === option ? 'selected' : ''}`}
-                   onClick={() => handleSelection('backend', option)}
-                 >
-                   {option}
-                 </div>
-               ))}
-             </div>
-           </div>
-         )}
-         {step === 3 && (
-           <div className="form-group">
-             <label>Deployment</label>
-             <div className="options">
-               {options.deployment.map(option => (
-                 <div
-                   key={option}
-                   className={`option ${deployment === option ? 'selected' : ''}`}
-                   onClick={() => handleSelection('deployment', option)}
-                 >
-                   {option}
-                 </div>
-               ))}
-             </div>
-           </div>
-         )}
-         <div className="form-navigation">
-           {step > 1 && <button type="button" onClick={prevStep}>Back</button>}
-           {step < 3 && <button type="button" onClick={nextStep}>Next</button>}
-           {step === 3 && <button type="submit">Submit</button>}
-         </div>
-      </form>
+          <div className="form-group">
+            <label>Frontend</label>
+            <div className="options">
+              {options.frontend.map(option => (
+                <div
+                  key={option.name}
+                  className={`option ${frontend === option.name ? 'selected' : ''}`}
+                  onClick={() => handleSelection('frontend', option.name)}
+                >
+                  <img src={option.logo} alt={option.name} className="logo" />
+                  {option.name}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {step === 2 && (
+          <div className="form-group">
+            <label>Backend</label>
+            <div className="options">
+              {options.backend.map(option => (
+                <div
+                  key={option.name}
+                  className={`option ${backend === option.name ? 'selected' : ''}`}
+                  onClick={() => handleSelection('backend', option.name)}
+                >
+                  <img src={option.logo} alt={option.name} className="logo" />
+                  {option.name}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {step === 3 && (
+          <div className="form-group">
+            <label>Deployment</label>
+            <div className="options">
+              {options.deployment.map(option => (
+                <div
+                  key={option.name}
+                  className={`option ${deployment === option.name ? 'selected' : ''}`}
+                  onClick={() => handleSelection('deployment', option.name)}
+                >
+                  <img src={option.logo} alt={option.name} className="logo" />
+                  {option.name}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        <div className="form-navigation">
+          {step > 1 && <button type="button" onClick={prevStep}>Back</button>}
+          {step < 3 && <button type="button" onClick={nextStep}>Next</button>}
+          {step === 3 && <button type="button" onClick={submitProjectData}>Submit</button>}
+        </div>
+      </div>
     </div>
   )
 }
