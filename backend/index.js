@@ -9,15 +9,22 @@ const session = require('express-session');
 
 const app = express();
 
-var passport = require("passport");
-
-// Serve the static files from the React app
+// Middleware
+app.use(express.json());
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-secret-key',
+  resave: false,
+  saveUninitialized: false
+}));
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
-// GitHub vars
-var GitHubStrategy = require("passport-github");
+// Passport config
+passport.serializeUser((user, done) => done(null, user));
+passport.deserializeUser((user, done) => done(null, user));
 
-// Passport init
+// GitHub Strategy
 passport.use(new GitHubStrategy({
     clientID: process.env['GITHUB_APP_CLIENT_ID'],
     clientSecret: process.env['GITHUB_APP_CLIENT_SECRET'],
@@ -28,25 +35,34 @@ passport.use(new GitHubStrategy({
   }
 ));
 
-// GitHub Auth Routes
-app.get("/auth/github", passport.authenticate("github", { failureRedirect: "/" }),
-  function(req, res) {
-    // If successful auth
-    res.redirect("/");
-  });
+// Auth Routes
+app.get("/auth/github", passport.authenticate("github", { scope: ["user:email"] }));
 
-// Handle requests by serving index.html for all routes
+app.get("/auth/github/callback",
+  passport.authenticate("github", { failureRedirect: "/" }),
+  (req, res) => res.redirect("/")
+);
+
+// Main route
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../frontend/dist", "index.html"));
 });
 
 // API endpoint
-app.use("/api/products", async (req, res) => {
-  const response = await axios.get("https://fakestoreapi.com/products");
-  res.send(response.data);
+app.get("/api/products", async (req, res) => {
+  try {
+    const response = await axios.get("https://fakestoreapi.com/products");
+    res.send(response.data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch products' });
+  }
 });
 
-// Start the server
-app.listen(4000, () => {
-  console.log("Server is running on port 4000");
+// Error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
 });
+
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
