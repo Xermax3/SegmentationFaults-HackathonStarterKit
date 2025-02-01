@@ -6,11 +6,13 @@ const axios = require("axios");
 const passport = require("passport");
 const GitHubStrategy = require("passport-github2").Strategy;
 const session = require('express-session');
+// const cors = require('cors');
 
 const app = express();
 
 // Middleware
 app.use(express.json());
+// app.use(cors());
 app.use(session({
   secret: process.env['SESSION_SECRET'] || 'your-secret-key',
   resave: false,
@@ -36,17 +38,17 @@ passport.use(new GitHubStrategy({
 ));
 
 // Auth Routes
-app.get("/auth/github", passport.authenticate("github", { scope: ["user:email"] }));
+app.get("/oauth/github", passport.authenticate("github", { scope: ["user:email"] }));
 
-app.get("/auth/github/callback",
-  passport.authenticate("github", { failureRedirect: "/" }),
-  (req, res) => res.redirect("/")
+app.get("/oauth/github/callback",
+  passport.authenticate("github", { failureRedirect: "http://localhost:5173" }),
+  (req, res) => res.redirect("https://google.ca")
 );
 
-// Main route
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/dist", "index.html"));
-});
+// // Main route
+// app.get("/", (req, res) => {
+//   res.sendFile(path.join(__dirname, "../frontend/dist", "index.html"));
+// });
 
 // API endpoint
 app.get("/api/products", async (req, res) => {
