@@ -41,9 +41,23 @@ passport.use(new GitHubStrategy({
 app.get("/oauth/github", passport.authenticate("github", { scope: ["user:email"], failureRedirect: "/" }));
 
 app.get("/oauth/github/callback",
-  passport.authenticate("github", { failureRedirect: "/" }),
-  (req, res) => res.redirect("/")
-);
+  async (req, res) => {
+    res.redirect("/")
+    // parse the url and extract ?code=
+    const code = req.url.split('?code=')[1];
+    console.log('code: ' + code);
+    // create a post request to https://github.com/login/oauth/access_token, as an application/json
+    const result = await axios.post('https://github.com/login/oauth/access_token', {
+      client_id: process.env['GITHUB_APP_CLIENT_ID'],
+      client_secret: process.env['GITHUB_APP_CLIENT_SECRET'],
+      code: code
+    }, {
+      headers: {
+        'Accept': 'application/json'
+      }
+    })
+    console.log(result.data);
+  });
 
 // // Main route
 // app.get("/", (req, res) => {
