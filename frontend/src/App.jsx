@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './App.css'
+import axios from 'axios'
 import reactLogo from './assets/react.svg'
 import vueLogo from './assets/vue.svg'
 import angularLogo from './assets/angular.svg'
@@ -9,7 +10,6 @@ import flaskLogo from './assets/flask.svg'
 import vercelLogo from './assets/vercel.svg'
 import netlifyLogo from './assets/netlify.svg'
 import herokuLogo from './assets/heroku.svg'
-import axios from 'axios'
 
 function App() {
   const [frontend, setFrontend] = useState('')
@@ -21,21 +21,23 @@ function App() {
   const prevStep = () => setStep(step - 1)
 
   const handleSelection = (type, value) => {
-    if (type === 'frontend') setFrontend(value)
-    if (type === 'backend') setBackend(value)
-    if (type === 'deployment') setDeployment(value)
+    if (type === 'frontend') setFrontend(frontend === value ? '' : value)
+    if (type === 'backend') setBackend(backend === value ? '' : value)
+    if (type === 'deployment') setDeployment(deployment === value ? '' : value)
   }
 
   const submitProjectData = async () => {
-    // const data = {
-    //   frontend,
-    //   backend,
-    //   deployment
-    // }
-    // alert(JSON.stringify(data, null, 2))
-    const res = await axios.get('http://localhost:4000/test-endpoint')
-    const data = res.data
-    alert(data)
+    try {
+      await axios.post('http://localhost:4000/send-project-details', {
+        frontend: frontend || null,
+        backend: backend || null,
+        deployment: deployment || null
+      })
+      alert('Project details submitted successfully')
+    } catch (error) {
+      console.error(error)
+      alert('An error occurred while submitting project details')
+    }
   }
 
   const options = {

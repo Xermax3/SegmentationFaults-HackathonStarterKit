@@ -40,9 +40,17 @@ app.get("/", (req, res) => {
 });
 
 // temp test endpoint
-app.get('/test-endpoint', (req, res) => {
-    res.send('Hello from the API');
-});
+// app.get('/test-endpoint', (req, res) => {
+//     res.send('Hello from the API');
+// });
+
+app.post("/send-project-details", (req, res) => {
+    const { frontend, backend, deployment } = req.body;
+    console.log("Frontend:", frontend, typeof frontend);
+    console.log("Backend:", backend, typeof backend);
+    console.log("Deployment:", deployment, typeof deployment);
+    res.send("Project details received");
+    });
 
 // API endpoint
 app.use("/api/products", async (req, res) => {
