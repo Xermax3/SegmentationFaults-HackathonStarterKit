@@ -1,5 +1,14 @@
 import { useState } from 'react'
 import './App.css'
+import reactLogo from './assets/react.svg'
+import vueLogo from './assets/vue.svg'
+import angularLogo from './assets/angular.svg'
+import nodeLogo from './assets/node.svg'
+import djangoLogo from './assets/django.svg'
+import flaskLogo from './assets/flask.svg'
+import vercelLogo from './assets/vercel.svg'
+import netlifyLogo from './assets/netlify.svg'
+import herokuLogo from './assets/heroku.svg'
 
 function App() {
   const [frontend, setFrontend] = useState('')
@@ -15,9 +24,21 @@ function App() {
   }
 
   const options = {
-    frontend: ['React', 'Vue', 'Angular'],
-    backend: ['Node.js', 'Django', 'Flask'],
-    deployment: ['Vercel', 'Netlify', 'Heroku']
+    frontend: [
+      { name: 'React', logo: reactLogo },
+      { name: 'Vue', logo: vueLogo },
+      { name: 'Angular', logo: angularLogo }
+    ],
+    backend: [
+      { name: 'Node.js', logo: nodeLogo },
+      { name: 'Django', logo: djangoLogo },
+      { name: 'Flask', logo: flaskLogo }
+    ],
+    deployment: [
+      { name: 'Vercel', logo: vercelLogo },
+      { name: 'Netlify', logo: netlifyLogo },
+      { name: 'Heroku', logo: herokuLogo }
+    ]
   }
 
 
@@ -38,6 +59,7 @@ function App() {
       </button>
       <form className="form">
         {step === 1 && (
+
            <div className="form-group">
              <label>Frontend</label>
              <div className="options">
@@ -90,7 +112,6 @@ function App() {
            {step < 3 && <button type="button" onClick={nextStep}>Next</button>}
            {step === 3 && <button type="submit">Submit</button>}
          </div>
-
       </form>
     </div>
   )
