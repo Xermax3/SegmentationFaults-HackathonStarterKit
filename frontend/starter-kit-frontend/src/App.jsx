@@ -5,37 +5,79 @@ function App() {
   const [frontend, setFrontend] = useState('')
   const [backend, setBackend] = useState('')
   const [deployment, setDeployment] = useState('')
+  const [step, setStep] = useState(1)
+
+  const nextStep = () => setStep(step + 1)
+  const prevStep = () => setStep(step - 1)
+
+  const options = {
+    frontend: ['React', 'Vue', 'Angular'],
+    backend: ['Node.js', 'Django', 'Flask'],
+    deployment: ['Vercel', 'Netlify', 'Heroku']
+  }
+
+  const handleSelection = (type, value) => {
+    if (type === 'frontend') setFrontend(value)
+    if (type === 'backend') setBackend(value)
+    if (type === 'deployment') setDeployment(value)
+  }
 
   return (
     <div className="app-container">
       <h1>Project Setup</h1>
       <form className="form">
-        <div className="form-group">
-          <label htmlFor="frontend">Frontend</label>
-          <select id="frontend" value={frontend} onChange={(e) => setFrontend(e.target.value)}>
-            <option value="">Select Frontend</option>
-            <option value="react">React</option>
-            <option value="vue">Vue</option>
-            <option value="angular">Angular</option>
-          </select>
-        </div>
-        <div className="form-group">
-          <label htmlFor="backend">Backend</label>
-          <select id="backend" value={backend} onChange={(e) => setBackend(e.target.value)}>
-            <option value="">Select Backend</option>
-            <option value="node">Node.js</option>
-            <option value="django">Django</option>
-            <option value="flask">Flask</option>
-          </select>
-        </div>
-        <div className="form-group">
-          <label htmlFor="deployment">Deployment</label>
-          <select id="deployment" value={deployment} onChange={(e) => setDeployment(e.target.value)}>
-            <option value="">Select Deployment</option>
-            <option value="vercel">Vercel</option>
-            <option value="netlify">Netlify</option>
-            <option value="heroku">Heroku</option>
-          </select>
+        {step === 1 && (
+          <div className="form-group">
+            <label>Frontend</label>
+            <div className="options">
+              {options.frontend.map(option => (
+                <div
+                  key={option}
+                  className={`option ${frontend === option ? 'selected' : ''}`}
+                  onClick={() => handleSelection('frontend', option)}
+                >
+                  {option}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {step === 2 && (
+          <div className="form-group">
+            <label>Backend</label>
+            <div className="options">
+              {options.backend.map(option => (
+                <div
+                  key={option}
+                  className={`option ${backend === option ? 'selected' : ''}`}
+                  onClick={() => handleSelection('backend', option)}
+                >
+                  {option}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        {step === 3 && (
+          <div className="form-group">
+            <label>Deployment</label>
+            <div className="options">
+              {options.deployment.map(option => (
+                <div
+                  key={option}
+                  className={`option ${deployment === option ? 'selected' : ''}`}
+                  onClick={() => handleSelection('deployment', option)}
+                >
+                  {option}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        <div className="form-navigation">
+          {step > 1 && <button type="button" onClick={prevStep}>Back</button>}
+          {step < 3 && <button type="button" onClick={nextStep}>Next</button>}
+          {step === 3 && <button type="submit">Submit</button>}
         </div>
       </form>
     </div>
