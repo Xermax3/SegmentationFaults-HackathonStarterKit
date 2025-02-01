@@ -1,5 +1,14 @@
 import { useState } from 'react'
 import './App.css'
+import reactLogo from './assets/react.svg'
+import vueLogo from './assets/vue.svg'
+import angularLogo from './assets/angular.svg'
+import nodeLogo from './assets/node.svg'
+import djangoLogo from './assets/django.svg'
+import flaskLogo from './assets/flask.svg'
+import vercelLogo from './assets/vercel.svg'
+import netlifyLogo from './assets/netlify.svg'
+import herokuLogo from './assets/heroku.svg'
 
 function App() {
   const [frontend, setFrontend] = useState('')
@@ -11,9 +20,21 @@ function App() {
   const prevStep = () => setStep(step - 1)
 
   const options = {
-    frontend: ['React', 'Vue', 'Angular'],
-    backend: ['Node.js', 'Django', 'Flask'],
-    deployment: ['Vercel', 'Netlify', 'Heroku']
+    frontend: [
+      { name: 'React', logo: reactLogo },
+      { name: 'Vue', logo: vueLogo },
+      { name: 'Angular', logo: angularLogo }
+    ],
+    backend: [
+      { name: 'Node.js', logo: nodeLogo },
+      { name: 'Django', logo: djangoLogo },
+      { name: 'Flask', logo: flaskLogo }
+    ],
+    deployment: [
+      { name: 'Vercel', logo: vercelLogo },
+      { name: 'Netlify', logo: netlifyLogo },
+      { name: 'Heroku', logo: herokuLogo }
+    ]
   }
 
   const handleSelection = (type, value) => {
@@ -32,11 +53,12 @@ function App() {
             <div className="options">
               {options.frontend.map(option => (
                 <div
-                  key={option}
-                  className={`option ${frontend === option ? 'selected' : ''}`}
-                  onClick={() => handleSelection('frontend', option)}
+                  key={option.name}
+                  className={`option ${frontend === option.name ? 'selected' : ''}`}
+                  onClick={() => handleSelection('frontend', option.name)}
                 >
-                  {option}
+                  <img src={option.logo} alt={option.name} className="logo" />
+                  {option.name}
                 </div>
               ))}
             </div>
@@ -48,11 +70,12 @@ function App() {
             <div className="options">
               {options.backend.map(option => (
                 <div
-                  key={option}
-                  className={`option ${backend === option ? 'selected' : ''}`}
-                  onClick={() => handleSelection('backend', option)}
+                  key={option.name}
+                  className={`option ${backend === option.name ? 'selected' : ''}`}
+                  onClick={() => handleSelection('backend', option.name)}
                 >
-                  {option}
+                  <img src={option.logo} alt={option.name} className="logo" />
+                  {option.name}
                 </div>
               ))}
             </div>
@@ -64,11 +87,12 @@ function App() {
             <div className="options">
               {options.deployment.map(option => (
                 <div
-                  key={option}
-                  className={`option ${deployment === option ? 'selected' : ''}`}
-                  onClick={() => handleSelection('deployment', option)}
+                  key={option.name}
+                  className={`option ${deployment === option.name ? 'selected' : ''}`}
+                  onClick={() => handleSelection('deployment', option.name)}
                 >
-                  {option}
+                  <img src={option.logo} alt={option.name} className="logo" />
+                  {option.name}
                 </div>
               ))}
             </div>
