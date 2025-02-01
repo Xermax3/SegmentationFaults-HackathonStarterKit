@@ -3,6 +3,9 @@ require('dotenv').config();
 const express = require("express");
 const path = require("path");
 const axios = require("axios");
+const passport = require("passport");
+const GitHubStrategy = require("passport-github2").Strategy;
+const session = require('express-session');
 
 const app = express();
 
@@ -16,13 +19,13 @@ var GitHubStrategy = require("passport-github");
 
 // Passport init
 passport.use(new GitHubStrategy({
-  clientID: process.env.GITHUB_CLIENT_ID,
-  clientSecret: process.env.GITHUB_CLIENT_SECRET,
-  callbackURL: "http://localhost:4000/auth/github/callback"
-},
-function(accessToken, refreshToken, profile, cb) {
-  return cb(null, profile);
-}
+    clientID: process.env['GITHUB_APP_CLIENT_ID'],
+    clientSecret: process.env['GITHUB_APP_CLIENT_SECRET'],
+    callbackURL: "http://localhost:4000/oauth/github/callback"
+  },
+  (accessToken, refreshToken, profile, done) => {
+    return done(null, profile);
+  }
 ));
 
 // GitHub Auth Routes
