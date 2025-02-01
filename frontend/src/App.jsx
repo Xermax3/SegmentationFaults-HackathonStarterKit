@@ -20,6 +20,24 @@ function App() {
   const nextStep = () => setStep(step + 1)
   const prevStep = () => setStep(step - 1)
 
+  const handleSelection = (type, value) => {
+    if (type === 'frontend') setFrontend(value)
+    if (type === 'backend') setBackend(value)
+    if (type === 'deployment') setDeployment(value)
+  }
+
+  const submitProjectData = async () => {
+    // const data = {
+    //   frontend,
+    //   backend,
+    //   deployment
+    // }
+    // alert(JSON.stringify(data, null, 2))
+    const res = await axios.get('http://localhost:4000/test-endpoint')
+    const data = res.data
+    alert(data)
+  }
+
   const options = {
     frontend: [
       { name: 'React', logo: reactLogo },
@@ -38,23 +56,10 @@ function App() {
     ]
   }
 
-  const handleSelection = (type, value) => {
-    if (type === 'frontend') setFrontend(value)
-    if (type === 'backend') setBackend(value)
-    if (type === 'deployment') setDeployment(value)
-  }
-
-
-  const submitProjectData = async () => {
-    const res = await axios.get('/test-endpoint');
-    const data = await res.json();
-    console.log(data);
-  }
-
   return (
     <div className="app-container">
       <h1>Project Setup</h1>
-      <form className="form">
+      <div className="form">
         {step === 1 && (
           <div className="form-group">
             <label>Frontend</label>
@@ -109,9 +114,9 @@ function App() {
         <div className="form-navigation">
           {step > 1 && <button type="button" onClick={prevStep}>Back</button>}
           {step < 3 && <button type="button" onClick={nextStep}>Next</button>}
-          {step === 3 && <button type="submit" onClick={submitProjectData}>Submit</button>}
+          {step === 3 && <button type="button" onClick={submitProjectData}>Submit</button>}
         </div>
-      </form>
+      </div>
     </div>
   )
 }
