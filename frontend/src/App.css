@@ -64,7 +64,7 @@ label {
 .option.selected {
   border-color: #646cff;
   background-color: #3e3e3e;
-  transform: translateX(20px);
+  transform: scale(1.1); /* Scale the selected option to make it bigger */
 }
 
 .logo {
@@ -78,6 +78,7 @@ label {
   justify-content: space-between;
   margin-top: 1rem;
 }
+
 
 button {
   border-radius: 8px;
