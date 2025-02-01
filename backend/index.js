@@ -1,43 +1,54 @@
+require('dotenv').config();
+
 const express = require("express");
 const path = require("path");
 const axios = require("axios");
-var cors = require('cors')
+const passport = require("passport");
+const GitHubStrategy = require("passport-github2").Strategy;
+const session = require('express-session');
+// const cors = require('cors');
+
 const app = express();
 
-// Serve the static files from the React app
+// Middleware
+app.use(express.json());
+// app.use(cors());
+app.use(session({
+  secret: process.env['SESSION_SECRET'] || 'your-secret-key',
+  resave: false,
+  saveUninitialized: false
+}));
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
-// Temporary for testing, remove in production
-app.use(cors())
+// Passport config
+passport.serializeUser((user, done) => done(null, user));
+passport.deserializeUser((user, done) => done(null, user));
 
-// GitHub vars
-// var gitHubStrategy = require("passport-github").Strategy;
+// GitHub Strategy
+passport.use(new GitHubStrategy({
+    clientID: process.env['GITHUB_APP_CLIENT_ID'],
+    clientSecret: process.env['GITHUB_APP_CLIENT_SECRET'],
+    callbackURL: "http://localhost:4000/oauth/github/callback"
+  },
+  (accessToken, refreshToken, profile, done) => {
+    return done(null, profile);
+  }
+));
 
-// Passport init
-// passport.use(new gitHubStrategy({
-//   clientID: process.env.GITHUB_CLIENT_ID,
-//   clientSecret: process.env.GITHUB_CLIENT_SECRET,
-//   callbackURL: "http://localhost:4000/auth/github/callback"
-// },
-// function(accessToken, refreshToken, profile, cb) {
-//   return cb(null, profile);
-// }
-// ));
+// Auth Routes
+app.get("/oauth/github", passport.authenticate("github", { scope: ["user:email"] }));
 
-// GitHub Auth Routes
-// app.get("/auth/github", passport.authenticate("github", { failureRedirect: "/" }),
-//   function(req, res) {
-//     // If successful auth
-//     res.redirect("/");
-//   });
+app.get("/oauth/github/callback",
+  passport.authenticate("github", { failureRedirect: "http://localhost:5173" }),
+  (req, res) => res.redirect("https://google.ca")
+);
 
-// Add json middleware
-app.use(express.json());
-
-// Handle requests by serving index.html for all routes
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../frontend/dist", "index.html"));
-});
+// // Main route
+// app.get("/", (req, res) => {
+//   res.sendFile(path.join(__dirname, "../frontend/dist", "index.html"));
+// });
 
 // temp test endpoint
 // app.get('/test-endpoint', (req, res) => {
@@ -53,13 +64,20 @@ app.post("/send-project-details", (req, res) => {
     });
 
 // API endpoint
-app.use("/api/products", async (req, res) => {
-  const response = await axios.get("https://fakestoreapi.com/products");
-  res.send(response.data);
+app.get("/api/products", async (req, res) => {
+  try {
+    const response = await axios.get("https://fakestoreapi.com/products");
+    res.send(response.data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch products' });
+  }
 });
 
-
-// Start the server
-app.listen(4000, () => {
-  console.log("Server is running on port 4000");
+// Error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something broke!');
 });
+
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

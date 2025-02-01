@@ -19,6 +19,10 @@ function App() {
 
   const nextStep = () => setStep(step + 1)
   const prevStep = () => setStep(step - 1)
+  
+  const handleGitHubLogin = async () => {
+    window.location.replace(`http://localhost:4000/oauth/github`)
+  }
 
   const handleSelection = (type, value) => {
     if (type === 'frontend') setFrontend(frontend === value ? '' : value)
@@ -61,6 +65,12 @@ function App() {
   return (
     <div className="app-container">
       <h1>Project Setup</h1>
+       <button 
+        type="button"
+        onClick={handleGitHubLogin}
+        className="github-login">
+          Login with Github
+        </button>
       <div className="form">
         {step === 1 && (
           <div className="form-group">
@@ -123,4 +133,4 @@ function App() {
   )
 }
 
-export default App
+export default App;
