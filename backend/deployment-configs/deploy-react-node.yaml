@@ -9,6 +9,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+      actions: write
+      checks: write
+
     strategy:
       matrix:
         node-version: [22.x] # Keeping one stable Node.js version
@@ -29,22 +34,28 @@ jobs:
         run: mkdir frontend backend
 
       - name: Pull frontend React project from template repo
-        run: git clone https://github.com/iyers16/template-react.git ./frontend
+        run: |
+          git clone --depth=1 https://github.com/iyers16/template-react.git frontend
+          rm -rf frontend/.git
 
       - name: Pull backend Node project from template repo
-        run: git clone https://github.com/iyers16/template-node.git ./backend
+        run: |
+          git clone --depth=1 https://github.com/iyers16/template-node.git backend
+          rm -rf backend/.git
 
       - name: Install dependencies for frontend and backend
         run: |
           cd frontend && npm install && cd ..
           cd backend && npm install && cd ..
+
       - name: Commit and push changes
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
           git add .
-          git commit -m "Add frontend and backend projects to repo"
-          git push
+          git commit -a -m "Add frontend and backend projects to repo" || echo "No changes to commit"
+          git push origin main
 
       - name: Deploy Project to Vercel
-        run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}
+        run: cd backend/ && vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
