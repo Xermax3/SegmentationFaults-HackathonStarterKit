@@ -10,7 +10,6 @@ import { Strategy as GitHubStrategy } from "passport-github2";
 import session from "express-session";
 import createRepo from "./gh/createRepo.js";
 import commit from "./gh/commit.js";
-import getUserData from "./gh/getUserData.js";
 import getPubKey from "./gh/getPubKey.js";
 import setSecret from "./gh/setSecret.js";
 import sodium from "sodium-native";
