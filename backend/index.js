@@ -125,7 +125,7 @@ app.get("/oauth/github/callback", async (req, res) => {
       req.cookies.refreshToken
     );
 
-    const repoName = `my-${req.session.projectDetails[0]}-${req.session.projectDetails[1]}-app`
+    const repoName = `my-${req.session.projectDetails[0].toLowerCase()}-${req.session.projectDetails[1].toLowerCase()}-app`
 
     const yamlType = getYamlType(req.session.projectDetails[0], req.session.projectDetails[1])
 
@@ -168,14 +168,10 @@ app.get("/oauth/github/callback", async (req, res) => {
 });
 
 function getYamlType(frontend, backend) {
-    if (frontend === "react" && backend === "node") {
+    if (frontend === "react" && backend === "node.js") {
         return "deploy-react-node.yaml";
     } else if (frontend === "react" && backend === "flask") {
         return "deploy-react-flask.yaml";
-    } else if (frontend === "vue" && backend === "node") {
-        return "deploy-vue-node.yaml";
-    } else if (frontend === "vue" && backend === "flask") {
-        return "deploy-vue-flask.yaml";
     } else {
         return "deploy-react-node.yaml";
     }
