@@ -1,0 +1,53 @@
+name: Vercel Production Deployment for React Flask
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Create frontend and backend subdirectories
+        run: mkdir frontend backend
+
+      - name: Pull frontend React project from template repo
+        run: git clone https://github.com/iyers16/template-react.git ./frontend
+
+      - name: Pull backend Flask project from template repo
+        run: git clone https://github.com/iyers16/template-flask.git ./backend
+
+      - name: Install dependencies for frontend
+        run: |
+          cd frontend && npm install && cd ..
+
+      - name: Install dependencies for backend (Flask)
+        run: |
+          cd backend
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+          cd ..
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Project to Vercel
+        run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}
