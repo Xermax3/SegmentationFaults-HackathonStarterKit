@@ -7,6 +7,7 @@ const passport = require("passport");
 const cookies = require("cookie-parser");
 const GitHubStrategy = require("passport-github2").Strategy;
 const session = require("express-session");
+const { equal } = require('assert');
 // const cors = require('cors');
 
 const app = express();
@@ -158,7 +159,9 @@ app.get("/", (req, res) => {
 
 // temp test endpoint
 // app.get('/test-endpoint', (req, res) => {
-//     res.send('Hello from the API');
+//     console.log(req.session.vercelAccessToken)
+
+//     res.send('Test endpoint');
 // });
 
 app.post("/send-project-details", (req, res) => {
