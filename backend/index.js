@@ -154,8 +154,12 @@ app.get("/oauth/github/callback", async (req, res) => {
 
     console.log("✅ Vercel token securely set in GitHub Secrets.");
 
-    await commit(req.cookies.accessToken, repoName, `.github/workflows/${yamlType}`, fs.readFileSync(`./deployment-configs/${yamlType}`, { encoding: "base64" }), "Add deployment workflow");
+    const filePath = `./deployment-configs/${yamlType}`;
+    if(process.env.NODE_ENV === "production") {
+        filePath = './backend/deployment-configs/${yamlType}';
+    }
 
+    await commit(req.cookies.accessToken, repoName, `.github/workflows/${yamlType}`, fs.readFileSync(filePath, { encoding: "base64" }), "Add deployment workflow");
 
     res.redirect("/");
   } catch (error) {
