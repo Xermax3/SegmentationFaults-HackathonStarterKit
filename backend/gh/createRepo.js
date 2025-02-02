@@ -1,5 +1,4 @@
 import { Octokit } from "octokit";
-import getUsername from "./getUsername.js";
 
 export default async function createRepo(
   accessToken,
@@ -22,21 +21,6 @@ export default async function createRepo(
       allow_squash_merge: true,
       allow_merge_commit: true,
     });
-    console.log("Repo created:", data.html_url);
-
-    // TODO: LISTREPO CHECK SHOULD BE DELETED BEFORE PRODUCTION
-    const { data: repos } = await octokit.request(
-      "GET /user/{username}/repos",
-      {
-        username: getUsername(),
-        headers: {
-          "X-GitHub-Api-Version": "2022-11-28",
-        },
-      }
-    );
-    console.log("User's repos:", repos);
-    // TODO: LISTREPO CHECK SHOULD BE DELETED BEFORE PRODUCTION
-
     return data.html_url;
   } catch (error) {
     console.error(

@@ -1,8 +1,12 @@
 import cookieParser from "cookie-parser";
-export default async function getAccessToken(req) {
+import dotenv from "dotenv";
+dotenv.config({ path: "../.env" });
+export default async function getAccessToken() {
   try {
-    const cookies = cookieParser.JSONCookies(req.headers.cookie);
-    return cookies.access_token;
+    const cookies = cookieParser.JSONCookies(
+      process.env["GITHUB_ACCESS_TOKEN"]
+    );
+    return cookies.accessToken;
   } catch (error) {
     console.error(
       "Error getting access token:",
