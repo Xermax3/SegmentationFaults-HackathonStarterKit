@@ -97,7 +97,6 @@ const App = () => {
               easing="easeOutCubic"
               threshold={0.2}
               rootMargin="-50px"
-              onLetterAnimationComplete={handleAnimationComplete}
             />
           </h2>
           
