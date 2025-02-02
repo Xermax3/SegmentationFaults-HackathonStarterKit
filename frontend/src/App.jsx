@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import axios from 'axios'
+import queryString from 'query-string'
 import reactLogo from './assets/react.svg'
 import vueLogo from './assets/vue.svg'
 import angularLogo from './assets/angular.svg'
@@ -19,10 +20,25 @@ function App() {
 
   const nextStep = () => setStep(step + 1)
   const prevStep = () => setStep(step - 1)
-  
-  const handleGitHubLogin = async () => {
-    window.location.replace('/oauth/github');
-  }
+
+  useEffect(async () => {
+    const { code, state } = queryString.parse(window.location.search);
+
+    console.log(`code is ${code}`)
+    console.log(`state is ${state}`)
+
+    // validate the state parameter
+    if (state !== localStorage.getItem("latestCSRFToken")){
+      localStorage.removeItem("latestCSRFToken");
+    } else {
+      // send the code to the backend
+      
+      await axios.post("/api/oauth-token", {
+        code
+      });
+
+    }
+  }, [])
 
   const handleSelection = (type, value) => {
     if (type === 'frontend') setFrontend(frontend === value ? '' : value)
@@ -32,7 +48,7 @@ function App() {
 
   const submitProjectData = async () => {
     try {
-      await axios.post(`http://${GITHUB_APP_CALLBACK_URL}/send-project-details`, {
+      await axios.post('/send-project-details', {
         frontend: frontend || null,
         backend: backend || null,
         deployment: deployment || null
@@ -42,6 +58,25 @@ function App() {
       console.error(error)
       alert('An error occurred while submitting project details')
     }
+  }
+
+  const handleGitHubLogin = async () => {
+    window.location.replace('/oauth/github')
+  }
+
+  const handleVercelLogin = () => {
+    // the integration URL slug from vercel
+    const client_slug = "gitstack-vercel-auth"
+
+    // create a CSRF token and store it locally
+    const array = new Uint32Array(4)
+    window.crypto.getRandomValues(array)
+    const state = Array.from(array, dec => ('0' + dec.toString(16)).substr(-2)).join('')
+    localStorage.setItem("latestCSRFToken", state)
+        
+    // redirect the user to vercel
+    const link = `https://vercel.com/integrations/${client_slug}/new?state=${state}`
+    window.location.assign(link)
   }
 
   const options = {
@@ -65,12 +100,18 @@ function App() {
   return (
     <div className="app-container">
       <h1>Project Setup</h1>
-       <button 
+      <button 
         type="button"
         onClick={handleGitHubLogin}
         className="github-login">
           Login with Github
-        </button>
+      </button>
+      <button 
+        type="button"
+        onClick={handleVercelLogin}
+        className="vercel-login">
+          Login with Vercel
+      </button>
       <div className="form">
         {step === 1 && (
           <div className="form-group">
@@ -133,4 +174,4 @@ function App() {
   )
 }
 
-export default App;
+export default App
