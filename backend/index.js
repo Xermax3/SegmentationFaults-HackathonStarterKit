@@ -4,8 +4,9 @@ const express = require("express");
 const path = require("path");
 const axios = require("axios");
 const passport = require("passport");
+const cookies = require("cookie-parser");
 const GitHubStrategy = require("passport-github2").Strategy;
-const session = require('express-session');
+const session = require("express-session");
 // const cors = require('cors');
 
 const app = express();
@@ -16,10 +17,12 @@ app.use(express.json());
 app.use(session({
   secret: process.env['SESSION_SECRET'] || 'your-secret-key',
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
+  cookie: { secure: false } // change when using HTTPS
 }));
 app.use(passport.initialize());
 app.use(passport.session());
+app.use(cookies());
 app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
 // Passport config
@@ -43,7 +46,7 @@ app.get("/oauth/github", passport.authenticate("github", { scope: ["user:email"]
 app.get("/oauth/github/callback",
   async (req, res) => {
     const code = req.query.code;
-    console.log('code: ' + code);
+    console.log('Auth code: ' + code);
 
     if (!code) {
       return res.status(400).send('Code not found');
@@ -60,34 +63,40 @@ app.get("/oauth/github/callback",
         }
       });
 
-      console.log(result.data);
-
-      // const { access_token, refresh_token } = result.data;
-      // console.log('Access Token:', access_token);
-      // console.log('Refresh Token:', refresh_token);
+      console.log('[oauth/callback - Pre cookie update] Access Token:', result.data.access_token);
+      console.log('[oauth/callback - Pre cookie update] Refresh Token:', result.data.refresh_token);
 
       // Store the tokens in the session or database
-      req.session.accessToken = result.data.access_token;
-      req.session.refreshToken = result.data.refresh_token;
+      res.cookie('accessToken', result.data.access_token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+      res.cookie('refreshToken', result.data.refresh_token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+
+      // log the access token to the console from cookie
+      // limitation: this will log to console after the user has auth'ed at least once, but does not break functionality
+      console.log('[oauth/callback - Post cookie update] Access Token:', req.cookies.accessToken);
+      console.log('[oauth/callback - Post cookie update] Refresh Token:', req.cookies.refreshToken);
 
       res.redirect("/");
     } catch (error) {
-      console.error('Error exchanging code for access token:', error.response);
-      // console.log(error);
+      console.error('Error exchanging code for access token:', error);
       res.status(500).send('Error exchanging code for access token');
     }
   });
 
 // Middleware to check and refresh access token if expired
+/**
+ * Middleware to check and refresh the access token if it is expired.
+ * @param {Object} req - The request object.
+ * @param {Object} res - The response object.
+ * @param {Function} next - The next middleware function.
+ */
 async function checkAndRefreshToken(req, res, next) {
-  const accessToken = req.session.accessToken;
-  const refreshToken = req.session.refreshToken;
+  const accessToken = cookies('accessToken');
+  const refreshToken = cookies('refreshToken');
 
-  console.log('Access Token:', accessToken);
-  console.log('Refresh Token:', refreshToken);
+  console.log('[checkAndRefreshToken] Access Token:', accessToken);
+  console.log('[checkAndRefreshToken] Refresh Token:', refreshToken);
 
   if (accessToken && refreshToken) {
-    // Check if access token is expired (this is a simplified check, you may need a more robust method)
     if (await isTokenExpired(accessToken)) {
       try {
         const result = await axios.post('https://github.com/login/oauth/access_token', {
@@ -101,16 +110,17 @@ async function checkAndRefreshToken(req, res, next) {
           }
         });
 
-        const { access_token } = result.data;
-        req.session.accessToken = access_token;
-        console.log('New Access Token:', access_token);
+        const { access_token } = result.data.access_token;
+        const { refresh_token } = result.data.refresh_token;
+
+        res.cookie('accessToken', access_token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+        res.cookie('refreshToken', refresh_token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
       } catch (error) {
-        console.error('Error refreshing access token:', error.response.data);
+        console.error('Error refreshing access token:', error.response?.data);
         return res.status(500).send('Error refreshing access token');
       }
     }
   }
-  
   next();
 }
 
@@ -118,7 +128,7 @@ async function checkAndRefreshToken(req, res, next) {
 async function isTokenExpired(token) {
   // Check if token is expired by querying https://api.github.com/orgs/google/repos
   // If the response is 401, then the token is expired
-  console.log("Checking if token is expired");
+  console.log("[isTokenExpired] Checking if token is expired");
   const result = await axios.get('https://api.github.com/orgs/google/repos', {
     headers: {
       'Accept': 'application/json',
