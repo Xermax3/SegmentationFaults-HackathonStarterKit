@@ -156,7 +156,7 @@ app.get("/oauth/github/callback", async (req, res) => {
 
     let filePath = `./deployment-configs/${yamlType}`;
     if(process.env.NODE_ENV === "production") {
-        filePath = `./backend/deployment-configs/${yamlType}`;
+        filePath = `../deployment-configs/${yamlType}`;
     }
 
     await commit(req.cookies.accessToken, repoName, `.github/workflows/${yamlType}`, fs.readFileSync(filePath, { encoding: "base64" }), "Add deployment workflow");
