@@ -1,4 +1,8 @@
 body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
   background-color: #121212;
   background-image: 
     repeating-linear-gradient(
@@ -20,9 +24,8 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  margin: 0;
   position: relative;
+  overflow: hidden;
   z-index: -1;
 }
 
@@ -44,18 +47,37 @@ body::before {
   z-index: -1;
 }
 
+.glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.045) 0%, rgba(255, 255, 255, 0) 50%);
+  pointer-events: none; /* Ensure the glow does not interfere with other elements */
+  transform: translate(-50%, -50%);
+  z-index: -1; /* Ensure the glow is behind all other elements */
+}
+
 .app-container {
   background-color: #1e1e1e;
-  padding: 2rem;
+  padding: 3rem;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   text-align: center;
   z-index: 1;
 }
 
+.large-title {
+  font-size: 6rem;
+  margin: 1.5rem;
+}
+
 h1 {
-  margin-top: 1.5rem;
-  margin-bottom: 1.5rem;
+  margin-top: 0.5rem;
+  /* margin-bottom: 0.5rem; */
+}
+
+.subtitle {
+  margin-bottom: 3rem;
 }
 
 .form {
@@ -119,33 +141,44 @@ label {
 
 button {
   border-radius: 8px;
-  border: 1px solid transparent;
+  border: 0px solid transparent;
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: #0da4c2;
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: background-color 0.25s;
 }
-
 button:hover {
-  border-color: #646cff;
+  background-color: #1a6d7e;
 }
 
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+.shiny-text {
+  color: #1AD8FBdd; /* Adjust this color to change intensity/style */
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 1) 48%,
+    rgba(255, 255, 255, 1) 52%,
+    rgba(255, 255, 255, 0) 60%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  display: inline-block;
+  animation: shine 5s linear infinite;
 }
 
-.github-login {
-  margin-bottom: 1rem;
-  background-color: #2c974b;
-  color: white;
-  border: none;
+@keyframes shine {
+  0% {
+    background-position: 100%;
+  }
+  100% {
+    background-position: -100%;
+  }
 }
 
-.github-login:hover {
-  background-color: #35b15c;
-  border-color: transparent;
+.shiny-text.disabled {
+  animation: none;
 }

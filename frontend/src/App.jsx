@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import axios from 'axios';
 import reactLogo from './assets/react.svg';
@@ -16,6 +16,20 @@ const App = () => {
   const [backend, setBackend] = useState('');
   const [deployment, setDeployment] = useState('');
   const [step, setStep] = useState(0); // Initialize step to 0 to show the new section first
+
+  useEffect(() => {
+    const handleMouseMove = (event) => {
+      const glow = document.querySelector('.glow');
+      glow.style.left = `${event.clientX}px`;
+      glow.style.top = `${event.clientY}px`;
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, []);
 
   const nextStep = () => setStep(step + 1);
   const prevStep = () => setStep(step - 1);
@@ -68,9 +82,10 @@ const App = () => {
 
   return (
     <div className="app-container">
+      <div className="glow"></div>
       {step === 0 ? (
         <div className="intro-section">
-          <h1 className="large-title">GitStack</h1>
+          <h1 className="large-title shiny-text">GitStack</h1>
           <h2 className="subtitle">Your Hackathon Starter Kit</h2>
           <button 
             type="button"
@@ -82,16 +97,10 @@ const App = () => {
       ) : (
         <>
           <h1>GitStack</h1>
-          <button 
-            type="button"
-            onClick={handleGitHubLogin}
-            className="github-login">
-              Login with Github
-          </button>
           <div className="form">
             {step === 1 && (
               <div className="form-group">
-                <label>Frontend</label>
+                <label>Select a Frontend Framework</label>
                 <div className="options">
                   {options.frontend.map(option => (
                     <div
@@ -108,7 +117,7 @@ const App = () => {
             )}
             {step === 2 && (
               <div className="form-group">
-                <label>Backend</label>
+                <label>Select a Backend Framework</label>
                 <div className="options">
                   {options.backend.map(option => (
                     <div
@@ -125,7 +134,7 @@ const App = () => {
             )}
             {step === 3 && (
               <div className="form-group">
-                <label>Deployment</label>
+                <label>Select a Deployment Framework</label>
                 <div className="options">
                   {options.deployment.map(option => (
                     <div
@@ -138,6 +147,16 @@ const App = () => {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+            {step === 3 && (
+              <div className="form-group">
+                <button 
+                  type="button"
+                  onClick={handleGitHubLogin}
+                  className="github-login">
+                    Login with Github
+                </button>
               </div>
             )}
             <div className="form-navigation">
