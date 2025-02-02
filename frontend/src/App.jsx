@@ -18,6 +18,8 @@ const App = () => {
   const [backend, setBackend] = useState('');
   const [deployment, setDeployment] = useState('');
   const [step, setStep] = useState(0); // Initialize step to 0 to show the new section first
+  const [fade, setFade] = useState(true); // State to manage fade transition
+  const fadeDuration = 400;
 
   useEffect(() => {
     const handleMouseMove = (event) => {
@@ -33,13 +35,29 @@ const App = () => {
     };
   }, []);
 
-
   const handleGetStarted = () => {
-    setStep(1); // Set step to 1 to show the form
+    setFade(false); // Start fade-out transition
+    setTimeout(() => {
+      setStep(1); // Set step to 1 to show the form
+      setFade(true); // Start fade-in transition
+    }, fadeDuration); // Match the duration of the CSS transition
   };
 
-  const nextStep = () => setStep(step + 1)
-  const prevStep = () => setStep(step - 1)
+  const nextStep = () => {
+    setFade(false); // Start fade-out transition
+    setTimeout(() => {
+      setStep(step + 1); // Move to the next step
+      setFade(true); // Start fade-in transition
+    }, fadeDuration); // Match the duration of the CSS transition
+  };
+
+  const prevStep = () => {
+    setFade(false); // Start fade-out transition
+    setTimeout(() => {
+      setStep(step - 1); // Move to the previous step
+      setFade(true); // Start fade-in transition
+    }, fadeDuration); // Match the duration of the CSS transition
+  };
 
   useEffect(() => {
 
@@ -120,7 +138,7 @@ const App = () => {
   };
 
   return (
-    <div className="app-container">
+    <div className={`app-container fade ${fade ? 'show' : ''}`}>
       <div className="glow"></div>
       {step === 0 ? (
         <div className="intro-section">

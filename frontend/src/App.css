@@ -209,3 +209,12 @@ button:hover {
 .shiny-text.disabled {
   animation: none;
 }
+
+.fade {
+  opacity: 0;
+  transition: opacity 0.4s ease-in-out;
+}
+
+.fade.show {
+  opacity: 1;
+}
