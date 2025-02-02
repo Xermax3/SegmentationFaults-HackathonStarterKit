@@ -134,7 +134,7 @@ label {
 
 .form-navigation {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-evenly;
   margin-top: 1rem;
 }
 
@@ -167,7 +167,7 @@ button:hover {
   -webkit-background-clip: text;
   background-clip: text;
   display: inline-block;
-  animation: shine 5s linear infinite;
+  animation: shine 3s linear infinite;
 }
 
 @keyframes shine {

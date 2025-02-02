@@ -10,6 +10,7 @@ import flaskLogo from './assets/flask.svg';
 import vercelLogo from './assets/vercel.svg';
 import netlifyLogo from './assets/netlify.svg';
 import herokuLogo from './assets/heroku.svg';
+import SplitText from "./SplitText.jsx";
 
 const App = () => {
   const [frontend, setFrontend] = useState('');
@@ -86,7 +87,20 @@ const App = () => {
       {step === 0 ? (
         <div className="intro-section">
           <h1 className="large-title shiny-text">GitStack</h1>
-          <h2 className="subtitle">Your Hackathon Starter Kit</h2>
+          <h2 className="subtitle">
+            <SplitText
+              text="Deploy in a Click!"
+              className="text-2xl font-semibold text-center subtitle"
+              delay={120}
+              animationFrom={{ opacity: 0, transform: 'translate3d(0,50px,0)' }}
+              animationTo={{ opacity: 1, transform: 'translate3d(0,0,0)' }}
+              easing="easeOutCubic"
+              threshold={0.2}
+              rootMargin="-50px"
+              onLetterAnimationComplete={handleAnimationComplete}
+            />
+          </h2>
+          
           <button 
             type="button"
             onClick={handleGetStarted}
@@ -125,7 +139,7 @@ const App = () => {
                       className={`option ${backend === option.name ? 'selected' : ''}`}
                       onClick={() => handleSelection('backend', option.name)}
                     >
-                      <img src={option.logo} alt={option.name} className="logo" />
+                      <img src={option.logo} alt={option.name} className="logo" draggable="false" />
                       {option.name}
                     </div>
                   ))}
@@ -149,20 +163,21 @@ const App = () => {
                 </div>
               </div>
             )}
-            {step === 3 && (
+            {step === 4 && (
               <div className="form-group">
+                <label>Grant access to GitHub to proceed</label>
                 <button 
                   type="button"
                   onClick={handleGitHubLogin}
                   className="github-login">
-                    Login with Github
+                    Log into Github
                 </button>
               </div>
             )}
             <div className="form-navigation">
               {step > 1 && <button type="button" onClick={prevStep}>Back</button>}
-              {step < 3 && <button type="button" onClick={nextStep}>Next</button>}
-              {step === 3 && <button type="button" onClick={submitProjectData}>Submit</button>}
+              {step < 4 && <button type="button" onClick={nextStep}>Next</button>} {/* TODO Next appear once logged */}
+              {step === 6 && <button type="button" onClick={submitProjectData}>Submit</button>}
             </div>
           </div>
         </>
