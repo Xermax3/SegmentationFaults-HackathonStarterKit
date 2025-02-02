@@ -1,5 +1,20 @@
 body {
   background-color: #121212;
+  background-image: 
+    repeating-linear-gradient(
+      to right, 
+      rgba(255, 255, 255, 0.1) 0, 
+      rgba(255, 255, 255, 0.1) 2px, 
+      transparent 1px, 
+      transparent 50px
+    ),
+    repeating-linear-gradient(
+      to bottom, 
+      rgba(255, 255, 255, 0.1) 0, 
+      rgba(255, 255, 255, 0.1) 2px, 
+      transparent 1px, 
+      transparent 50px
+    );
   color: #ffffff;
   font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
   display: flex;
@@ -7,6 +22,26 @@ body {
   align-items: center;
   height: 100vh;
   margin: 0;
+  position: relative;
+  z-index: -1;
+}
+
+body::before {
+  content: "";
+  position: absolute;
+  top: 26px;
+  left: 26px;
+  width: 100%;
+  height: 100%;
+  background-image:
+    radial-gradient(
+      circle, 
+      rgba(255, 255, 255, 0.4) 2px, 
+      transparent 2px
+    );
+  background-size: 50px 50px;
+  pointer-events: none;
+  z-index: -1;
 }
 
 .app-container {
@@ -15,9 +50,11 @@ body {
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   text-align: center;
+  z-index: 1;
 }
 
 h1 {
+  margin-top: 1.5rem;
   margin-bottom: 1.5rem;
 }
 
