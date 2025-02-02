@@ -18,6 +18,8 @@ const App = () => {
   const [deployment, setDeployment] = useState('');
   const [vercelApiKey, setVercelApiKey] = useState('');
   const [step, setStep] = useState(0); // Initialize step to 0 to show the new section first
+  const [fade, setFade] = useState(true); // State to manage fade transition
+  const fadeDuration = 400;
 
   useEffect(() => {
     const handleMouseMove = (event) => {
@@ -34,11 +36,28 @@ const App = () => {
   }, []);
 
   const handleGetStarted = () => {
-    setStep(1); // Set step to 1 to show the form
+    setFade(false); // Start fade-out transition
+    setTimeout(() => {
+      setStep(1); // Set step to 1 to show the form
+      setFade(true); // Start fade-in transition
+    }, fadeDuration); // Match the duration of the CSS transition
   };
 
-  const nextStep = () => setStep(step + 1)
-  const prevStep = () => setStep(step - 1)
+  const nextStep = () => {
+    setFade(false); // Start fade-out transition
+    setTimeout(() => {
+      setStep(step + 1); // Move to the next step
+      setFade(true); // Start fade-in transition
+    }, fadeDuration); // Match the duration of the CSS transition
+  };
+
+  const prevStep = () => {
+    setFade(false); // Start fade-out transition
+    setTimeout(() => {
+      setStep(step - 1); // Move to the previous step
+      setFade(true); // Start fade-in transition
+    }, fadeDuration); // Match the duration of the CSS transition
+  };
 
   const handleSelection = (type, value) => {
     if (type === 'frontend') setFrontend(frontend === value ? '' : value);
@@ -65,23 +84,23 @@ const App = () => {
   const options = {
     frontend: [
       { name: 'React', logo: reactLogo },
-      { name: 'Vue', logo: vueLogo },
+      // { name: 'Vue', logo: vueLogo },
       { name: 'Angular', logo: angularLogo }
     ],
     backend: [
       { name: 'Node.js', logo: nodeLogo },
-      { name: 'Django', logo: djangoLogo },
+      // { name: 'Django', logo: djangoLogo },
       { name: 'Flask', logo: flaskLogo }
     ],
-    deployment: [
-      { name: 'Vercel', logo: vercelLogo },
-      { name: 'Netlify', logo: netlifyLogo },
-      { name: 'Heroku', logo: herokuLogo }
-    ]
+    // deployment: [
+    //   { name: 'Vercel', logo: vercelLogo },
+    //   { name: 'Netlify', logo: netlifyLogo },
+    //   { name: 'Heroku', logo: herokuLogo }
+    // ]
   };
 
   return (
-    <div className="app-container">
+    <div className={`app-container fade ${fade ? 'show' : ''}`}>
       <div className="glow"></div>
       {step === 0 ? (
         <div className="intro-section">
@@ -144,7 +163,7 @@ const App = () => {
                 </div>
               </div>
             )}
-            {step === 3 && (
+            {/* {step === 3 && (
               <div className="form-group">
                 <label>Select a Deployment Framework</label>
                 <div className="options">
@@ -160,40 +179,45 @@ const App = () => {
                   ))}
                 </div>
               </div>
-            )}
-            {step === 4 && (
+            )} */}
+            {step === 3 && (
               <div className="form-group">
-                <label>Enter Vercel API Key</label>
-                <input 
-                  type="text" 
-                  value={vercelApiKey} 
-                  onChange={(e) => setVercelApiKey(e.target.value)} 
-                  className="vercel-api-key-input"
-                />
-                <button 
-                  type="button"
-                  onClick={async () => {
-                      if (!vercelApiKey) {
-                          alert('Please enter your Vercel API key.');
-                          return;
-                      }
-                      // TODO Post Request w all project details & API key
+                <div className="form-final-div form-final-div1">
+                  <label>Enter Your <a href="https://vercel.com/account/tokens">Vercel API Key</a></label>
+                  <input 
+                    type="text" 
+                    value={vercelApiKey} 
+                    onChange={(e) => setVercelApiKey(e.target.value)} 
+                    className="vercel-api-key-input"
+                  />
+                </div>
+                <div className="form-final-div">
+                  <label>Once this is done, create your project!</label>
+                  <button 
+                    type="button"
+                    onClick={async () => {
+                        if (!vercelApiKey) {
+                            alert('Please enter your Vercel API key.');
+                            return;
+                        }
+                        // Post Request w all project details & API key
                         await axios.post('/send-project-details', {
                             frontend: frontend || null,
                             backend: backend || null,
                             vercelApiKey: vercelApiKey || null
                             });
                         window.location.replace('/oauth/github');
-                  }}
-                  className="github-login">
-                    Log into Github
-                </button>
+                    }}
+                    className="github-login">
+                      Log into Github
+                  </button>
+                </div>
               </div>
             )}
             <div className="form-navigation">
               {step > 1 && <button type="button" onClick={prevStep}>Back</button>}
-              {step < 4 && <button type="button" onClick={nextStep}>Next</button>} {/* TODO Next appear once logged */}
-              {step === 6 && <button type="button" onClick={submitProjectData}>Submit</button>}
+              {step < 3 && <button type="button" onClick={nextStep}>Next</button>}
+              {/* {step === 3 && <button type="button" onClick={submitProjectData}>Submit</button>} */}
             </div>
           </div>
         </>
