@@ -124,7 +124,7 @@ app.get("/oauth/github/callback", async (req, res) => {
 
     const repoName = `my-${req.session.projectDetails[0].toLowerCase()}-${req.session.projectDetails[1].toLowerCase()}-app`
 
-    const yamlType = getYamlType(req.session.projectDetails[0], req.session.projectDetails[1])
+    const yamlType = getYamlType(req.session.projectDetails[0].toLowerCase(), req.session.projectDetails[1].toLowerCase())
 
     await createRepo(req.cookies.accessToken, repoName, false);
 
