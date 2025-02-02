@@ -21,7 +21,7 @@ function App() {
   const prevStep = () => setStep(step - 1)
   
   const handleGitHubLogin = async () => {
-    window.location.replace(`http://localhost:4000/oauth/github`)
+    window.location.replace('/oauth/github');
   }
 
   const handleSelection = (type, value) => {
@@ -32,7 +32,7 @@ function App() {
 
   const submitProjectData = async () => {
     try {
-      await axios.post('http://localhost:4000/send-project-details', {
+      await axios.post(`http://${GITHUB_APP_CALLBACK_URL}/send-project-details`, {
         frontend: frontend || null,
         backend: backend || null,
         deployment: deployment || null
