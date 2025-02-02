@@ -6,6 +6,7 @@ const axios = require("axios");
 const passport = require("passport");
 const GitHubStrategy = require("passport-github2").Strategy;
 const session = require('express-session');
+const { read } = require('fs');
 // const cors = require('cors');
 
 const app = express();
@@ -158,6 +159,26 @@ app.post("/send-project-details", (req, res) => {
     console.log("Deployment:", deployment, typeof deployment);
     res.send("Project details received");
     });
+
+app.post("/api/oauth-token", async (req, res) => {
+    const { code } = req.body;
+
+    const response = await axios.post(
+      "https://api.vercel.com/v2/oauth/access_token",
+      new URLSearchParams({
+        code: code,
+        client_id: process.env.VERCEL_CLIENT_ID,
+        client_secret: process.env.VERCEL_CLIENT_SECRET,
+        redirect_uri: `${process.env.GITHUB_APP_CALLBACK_URL}/`,
+      })
+    );
+
+    req.session.vercelAccessToken = response.data.access_token;
+
+    console.log(req.session.vercelAccessToken)
+
+    res.redirect('/');
+  });
 
 // API endpoint
 app.get("/api/products", async (req, res) => {
