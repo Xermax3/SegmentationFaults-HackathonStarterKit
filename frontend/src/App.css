@@ -82,28 +82,11 @@ h1 {
 
 .github-login,
 .vercel-login {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.8em 1.5em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-  margin: 0.5rem;
+  background-color: #2ab318;
 }
-
 .github-login:hover,
 .vercel-login:hover {
-  border-color: #646cff;
-}
-
-.github-login:focus,
-.github-login:focus-visible,
-.vercel-login:focus,
-.vercel-login:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  background-color: #267e1a;
 }
 
 .form {
@@ -217,4 +200,13 @@ button:hover {
 
 .fade.show {
   opacity: 1;
+}
+
+.form-final-div {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-final-div1 {
+  margin-bottom: 2em;
 }

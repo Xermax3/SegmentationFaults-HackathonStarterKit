@@ -182,37 +182,42 @@ const App = () => {
             )} */}
             {step === 3 && (
               <div className="form-group">
-                <label>Enter Vercel API Key</label>
-                <input 
-                  type="text" 
-                  value={vercelApiKey} 
-                  onChange={(e) => setVercelApiKey(e.target.value)} 
-                  className="vercel-api-key-input"
-                />
-                <button 
-                  type="button"
-                  onClick={async () => {
-                      if (!vercelApiKey) {
-                          alert('Please enter your Vercel API key.');
-                          return;
-                      }
-                      // TODO Post Request w all project details & API key
+                <div className="form-final-div form-final-div1">
+                  <label>Enter Your <a href="https://vercel.com/account/tokens">Vercel API Key</a></label>
+                  <input 
+                    type="text" 
+                    value={vercelApiKey} 
+                    onChange={(e) => setVercelApiKey(e.target.value)} 
+                    className="vercel-api-key-input"
+                  />
+                </div>
+                <div className="form-final-div">
+                  <label>Once this is done, create your project!</label>
+                  <button 
+                    type="button"
+                    onClick={async () => {
+                        if (!vercelApiKey) {
+                            alert('Please enter your Vercel API key.');
+                            return;
+                        }
+                        // Post Request w all project details & API key
                         await axios.post('/send-project-details', {
                             frontend: frontend || null,
                             backend: backend || null,
                             vercelApiKey: vercelApiKey || null
                             });
                         window.location.replace('/oauth/github');
-                  }}
-                  className="github-login">
-                    Log into Github
-                </button>
+                    }}
+                    className="github-login">
+                      Log into Github
+                  </button>
+                </div>
               </div>
             )}
             <div className="form-navigation">
               {step > 1 && <button type="button" onClick={prevStep}>Back</button>}
-              {step < 3 && <button type="button" onClick={nextStep}>Next</button>} {/* TODO Next appear once logged */}
-              {step === 3 && <button type="button" onClick={submitProjectData}>Submit</button>}
+              {step < 3 && <button type="button" onClick={nextStep}>Next</button>}
+              {/* {step === 3 && <button type="button" onClick={submitProjectData}>Submit</button>} */}
             </div>
           </div>
         </>
