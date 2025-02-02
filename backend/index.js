@@ -154,6 +154,8 @@ app.get("/oauth/github/callback", async (req, res) => {
 
     console.log("✅ Vercel token securely set in GitHub Secrets.");
 
+    console.log('Current directory: ' + process.cwd());
+
     let filePath = `./deployment-configs/${yamlType}`;
     if(process.env.NODE_ENV === "production") {
         filePath = `../deployment-configs/${yamlType}`;
