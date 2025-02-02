@@ -8,7 +8,6 @@ import passport from "passport";
 import cookies from "cookie-parser";
 import { Strategy as GitHubStrategy } from "passport-github2";
 import session from "express-session";
-import { equal } from "assert";
 import createRepo from "./gh/createRepo.js";
 import commit from "./gh/commit.js";
 import getUserData from "./gh/getUserData.js";
@@ -16,7 +15,6 @@ import getPubKey from "./gh/getPubKey.js";
 import setSecret from "./gh/setSecret.js";
 import sodium from "sodium-native";
 import {fileURLToPath} from "url";
-import { getPriority } from "os";
 import fs from "fs";
 // import cors from 'cors';
 
@@ -244,28 +242,11 @@ async function isTokenExpired(token) {
   return result.status === 401;
 }
 
-// Use the middleware for routes that require authentication
-// app.use('/', checkAndRefreshToken, (req, res) => {
-//   res.send('This is a protected route');
-// });
-
 // Main route
 app.get("/", (req, res) => {
   checkAndRefreshToken(req, res);
   res.sendFile(path.join(__dirname, "../frontend/dist", "index.html"));
 });
-
-// // Main route
-// app.get("/", (req, res) => {
-//   res.sendFile(path.join(__dirname, "../frontend/dist", "index.html"));
-// });
-
-// temp test endpoint
-// app.get('/test-endpoint', (req, res) => {
-//     console.log(req.session.vercelAccessToken)
-
-//     res.send('Test endpoint');
-// });
 
 app.post("/send-project-details", (req, res) => {
   const { frontend, backend, vercelApiKey } = req.body;
@@ -274,36 +255,6 @@ app.post("/send-project-details", (req, res) => {
   req.session.vercelApiKey = vercelApiKey;
 
   res.send("Project details received");
-});
-
-// app.post("/api/oauth-token", async (req, res) => {
-//     const { code } = req.body;
-
-//     const response = await axios.post(
-//       "https://api.vercel.com/v2/oauth/access_token",
-//       new URLSearchParams({
-//         code: code,
-//         client_id: process.env.VERCEL_CLIENT_ID,
-//         client_secret: process.env.VERCEL_CLIENT_SECRET,
-//         redirect_uri: `${process.env.GITHUB_APP_CALLBACK_URL}/`,
-//       })
-//     );
-
-//     req.session.vercelAccessToken = response.data.access_token;
-
-//     console.log(req.session.vercelAccessToken)
-
-//     res.redirect('/');
-//   });
-
-// API endpoint
-app.get("/api/products", async (req, res) => {
-  try {
-    const response = await axios.get("https://fakestoreapi.com/products");
-    res.send(response.data);
-  } catch (error) {
-    res.status(500).json({ error: "Failed to fetch products" });
-  }
 });
 
 // Error handler
