@@ -23,6 +23,7 @@
     "octokit": "^4.1.0",
     "passport": "^0.7.0",
     "passport-github2": "^0.1.12",
-    "path": "^0.12.7"
+    "path": "^0.12.7",
+    "sodium-native": "^4.3.1"
   }
 }
