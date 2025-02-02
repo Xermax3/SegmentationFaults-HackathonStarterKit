@@ -67,10 +67,11 @@ app.get("/oauth/github/callback",
       console.log('[oauth/callback - Pre cookie update] Refresh Token:', result.data.refresh_token);
 
       // Store the tokens in the session or database
-      cookies('accessToken', result.data.access_token, { httpOnly: false, secure: process.env.NODE_ENV === 'production' });
-      cookies('refreshToken', result.data.refresh_token, { httpOnly: false, secure: process.env.NODE_ENV === 'production' });
+      res.cookie('accessToken', result.data.access_token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+      res.cookie('refreshToken', result.data.refresh_token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
 
       // log the access token to the console from cookie
+      // limitation: this will log to console after the user has auth'ed at least once, but does not break functionality
       console.log('[oauth/callback - Post cookie update] Access Token:', req.cookies.accessToken);
       console.log('[oauth/callback - Post cookie update] Refresh Token:', req.cookies.refreshToken);
 
@@ -112,8 +113,8 @@ async function checkAndRefreshToken(req, res, next) {
         const { access_token } = result.data.access_token;
         const { refresh_token } = result.data.refresh_token;
 
-        cookies('accessToken', access_token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
-        cookies('refreshToken', refresh_token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+        res.cookie('accessToken', access_token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+        res.cookie('refreshToken', refresh_token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
       } catch (error) {
         console.error('Error refreshing access token:', error.response?.data);
         return res.status(500).send('Error refreshing access token');
