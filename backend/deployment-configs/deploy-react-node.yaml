@@ -58,4 +58,4 @@ jobs:
           git push origin main
 
       - name: Deploy Project to Vercel
-        run: cd backend/ && vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
+        run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
