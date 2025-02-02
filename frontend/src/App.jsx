@@ -122,19 +122,19 @@ const App = () => {
   const options = {
     frontend: [
       { name: 'React', logo: reactLogo },
-      { name: 'Vue', logo: vueLogo },
+      // { name: 'Vue', logo: vueLogo },
       { name: 'Angular', logo: angularLogo }
     ],
     backend: [
       { name: 'Node.js', logo: nodeLogo },
-      { name: 'Django', logo: djangoLogo },
+      // { name: 'Django', logo: djangoLogo },
       { name: 'Flask', logo: flaskLogo }
     ],
-    deployment: [
-      { name: 'Vercel', logo: vercelLogo },
-      { name: 'Netlify', logo: netlifyLogo },
-      { name: 'Heroku', logo: herokuLogo }
-    ]
+    // deployment: [
+    //   { name: 'Vercel', logo: vercelLogo },
+    //   { name: 'Netlify', logo: netlifyLogo },
+    //   { name: 'Heroku', logo: herokuLogo }
+    // ]
   };
 
   return (
@@ -201,7 +201,7 @@ const App = () => {
                 </div>
               </div>
             )}
-            {step === 3 && (
+            {/* {step === 3 && (
               <div className="form-group">
                 <label>Select a Deployment Framework</label>
                 <div className="options">
@@ -217,8 +217,8 @@ const App = () => {
                   ))}
                 </div>
               </div>
-            )}
-            {step === 4 && (
+            )} */}
+            {step === 3 && (
               <div className="form-group">
                 <label>Grant access to GitHub to proceed</label>
                 <button 
@@ -237,8 +237,8 @@ const App = () => {
             )}
             <div className="form-navigation">
               {step > 1 && <button type="button" onClick={prevStep}>Back</button>}
-              {step < 4 && <button type="button" onClick={nextStep}>Next</button>} {/* TODO Next appear once logged */}
-              {step === 6 && <button type="button" onClick={submitProjectData}>Submit</button>}
+              {step < 3 && <button type="button" onClick={nextStep}>Next</button>} {/* TODO Next appear once logged */}
+              {step === 3 && <button type="button" onClick={submitProjectData}>Submit</button>}
             </div>
           </div>
         </>
