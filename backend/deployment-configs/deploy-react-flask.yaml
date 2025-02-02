@@ -1,0 +1,87 @@
+name: Vercel Production Deployment for React Flask
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      actions: write
+      checks: write
+
+    strategy:
+      matrix:
+        node-version: [22.x] # Keeping one stable Node.js version
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Create frontend and backend subdirectories
+        run: mkdir frontend backend
+
+      - name: Pull frontend React project from template repo
+        run: |
+          git clone --depth=1 https://github.com/iyers16/template-react.git frontend
+          rm -rf frontend/.git
+
+      - name: Pull backend Flask project from template repo
+        run: |
+          git clone --depth=1 https://github.com/iyers16/template-flask.git backend
+          rm -rf backend/.git
+
+      - name: Add vercel.json to the root of the project
+        run: |
+          echo '{
+            "version": 2,
+            "builds": [
+              {
+                "src": "backend/server.py",
+                "use": "@vercel/python"
+              }
+            ],
+            "routes": [
+              {
+                "src": "/(.*)",
+                "dest": "backend/server.py"
+              }
+            ],
+            "buildCommand": "pip install -r backend/requirements.txt && npm install --prefix frontend && npm run build --prefix frontend"
+          }' > vercel.json
+
+      - name: Install dependencies for frontend
+        run: |
+          cd frontend && npm install && cd ..
+
+      - name: Install dependencies for backend (Flask)
+        run: |
+          cd backend
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+          cd ..
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          git add .
+          git commit -a -m "Add frontend and backend projects to repo" || echo "No changes to commit"
+          git push origin main
+
+      - name: Deploy Project to Vercel
+        run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }} --yes

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
 import axios from 'axios';
 import reactLogo from './assets/react.svg';
@@ -11,12 +11,12 @@ import vercelLogo from './assets/vercel.svg';
 import netlifyLogo from './assets/netlify.svg';
 import herokuLogo from './assets/heroku.svg';
 import SplitText from "./SplitText.jsx";
-import queryString from 'query-string';
 
 const App = () => {
   const [frontend, setFrontend] = useState('');
   const [backend, setBackend] = useState('');
   const [deployment, setDeployment] = useState('');
+  const [vercelApiKey, setVercelApiKey] = useState('');
   const [step, setStep] = useState(0); // Initialize step to 0 to show the new section first
   const [fade, setFade] = useState(true); // State to manage fade transition
   const fadeDuration = 400;
@@ -59,27 +59,6 @@ const App = () => {
     }, fadeDuration); // Match the duration of the CSS transition
   };
 
-  useEffect(() => {
-
-    (async () => { 
-      const { code, state } = queryString.parse(window.location.search);
-
-      console.log(`code is ${code}`)
-      console.log(`state is ${state}`)
-
-      // validate the state parameter
-      if (state !== localStorage.getItem("latestCSRFToken")){
-        localStorage.removeItem("latestCSRFToken");
-      } else {
-        // send the code to the backend
-        await axios.post("/api/oauth-token", {
-          code
-        });
-
-      }
-    })();
-  }, [])
-
   const handleSelection = (type, value) => {
     if (type === 'frontend') setFrontend(frontend === value ? '' : value);
     if (type === 'backend') setBackend(backend === value ? '' : value);
@@ -91,7 +70,8 @@ const App = () => {
       await axios.post('/send-project-details', {
         frontend: frontend || null,
         backend: backend || null,
-        deployment: deployment || null
+        deployment: deployment || null,
+        vercelApiKey: vercelApiKey || null
       });
       alert('Project details submitted successfully');
     } catch (error) {
@@ -100,24 +80,6 @@ const App = () => {
     }
   };
 
-  const handleGitHubLogin = async () => {
-    window.location.replace('/oauth/github')
-  }
-
-  const handleVercelLogin = () => {
-    // the integration URL slug from vercel
-    const client_slug = "gitstack-vercel-auth"
-
-    // create a CSRF token and store it locally
-    const array = new Uint32Array(4)
-    window.crypto.getRandomValues(array)
-    const state = Array.from(array, dec => ('0' + dec.toString(16)).substr(-2)).join('')
-    localStorage.setItem("latestCSRFToken", state)
-        
-    // redirect the user to vercel
-    const link = `https://vercel.com/integrations/${client_slug}/new?state=${state}`
-    window.location.assign(link)
-  }
 
   const options = {
     frontend: [
@@ -220,18 +182,30 @@ const App = () => {
             )} */}
             {step === 3 && (
               <div className="form-group">
-                <label>Grant access to GitHub to proceed</label>
+                <label>Enter Vercel API Key</label>
+                <input 
+                  type="text" 
+                  value={vercelApiKey} 
+                  onChange={(e) => setVercelApiKey(e.target.value)} 
+                  className="vercel-api-key-input"
+                />
                 <button 
                   type="button"
-                  onClick={handleGitHubLogin}
+                  onClick={async () => {
+                      if (!vercelApiKey) {
+                          alert('Please enter your Vercel API key.');
+                          return;
+                      }
+                      // TODO Post Request w all project details & API key
+                        await axios.post('/send-project-details', {
+                            frontend: frontend || null,
+                            backend: backend || null,
+                            vercelApiKey: vercelApiKey || null
+                            });
+                        window.location.replace('/oauth/github');
+                  }}
                   className="github-login">
                     Log into Github
-                </button>
-                <button 
-                  type="button"
-                  onClick={handleVercelLogin}
-                  className="vercel-login">
-                    Login with Vercel
                 </button>
               </div>
             )}

@@ -1,0 +1,83 @@
+name: Vercel Production Deployment for Angular Node
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      actions: write
+      checks: write
+
+    strategy:
+      matrix:
+        node-version: [22.x] # Keeping one stable Node.js version
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Create frontend and backend subdirectories
+        run: mkdir frontend backend
+
+      - name: Pull frontend Angular project from template repo
+        run: |
+          git clone --depth=1 https://github.com/iyers16/template-angular.git frontend
+          rm -rf frontend/.git
+
+      - name: Pull backend Node project from template repo
+        run: |
+          git clone --depth=1 https://github.com/iyers16/template-node.git backend
+          rm -rf backend/.git
+
+      - name: Add vercel.json to the root of the project
+        run: |
+          echo '{
+            "version": 2,
+            "builds": [
+              {
+                "src": "backend/server.js",
+                "use": "@vercel/node"
+              }
+            ],
+            "routes": [
+              {
+                "src": "/(.*)",
+                "dest": "backend/server.js"
+              }
+            ],
+            "buildCommand": "npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend"
+          }' > vercel.json
+
+      - name: Install dependencies for frontend (Angular)
+        run: |
+          cd frontend && npm install && cd ..
+
+      - name: Install dependencies for backend (Node)
+        run: |
+          cd backend && npm install && cd ..
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          git add .
+          git commit -a -m "Add frontend and backend projects to repo" || echo "No changes to commit"
+          git push origin main
+
+      - name: Deploy Project to Vercel
+        run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }} --yes

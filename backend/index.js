@@ -1,87 +1,181 @@
-require('dotenv').config();
+import dotenv from "dotenv";
+dotenv.config({path: "./.env"})
 
-const express = require("express");
-const path = require("path");
-const axios = require("axios");
-const passport = require("passport");
-const cookies = require("cookie-parser");
-const GitHubStrategy = require("passport-github2").Strategy;
-const session = require("express-session");
-const { equal } = require('assert');
-// const cors = require('cors');
+import express from "express";
+import path from "path";
+import axios from "axios";
+import passport from "passport";
+import cookies from "cookie-parser";
+import { Strategy as GitHubStrategy } from "passport-github2";
+import session from "express-session";
+import { equal } from "assert";
+import createRepo from "./gh/createRepo.js";
+import commit from "./gh/commit.js";
+import getUserData from "./gh/getUserData.js";
+import getPubKey from "./gh/getPubKey.js";
+import setSecret from "./gh/setSecret.js";
+import sodium from "sodium-native";
+import {fileURLToPath} from "url";
+import { getPriority } from "os";
+import fs from "fs";
+// import cors from 'cors';
 
 const app = express();
 
 // Middleware
 app.use(express.json());
 // app.use(cors());
-app.use(session({
-  secret: process.env['SESSION_SECRET'] || 'your-secret-key',
-  resave: false,
-  saveUninitialized: false,
-  cookie: { secure: false } // change when using HTTPS
-}));
+app.use(
+  session({
+    secret: process.env["SESSION_SECRET"] || "your-secret-key",
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false }, // change when using HTTPS
+  })
+);
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(cookies());
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+
 app.use(express.static(path.join(__dirname, "../frontend/dist")));
 
 // Passport config
 passport.serializeUser((user, done) => done(null, user));
 passport.deserializeUser((user, done) => done(null, user));
 
+
 // GitHub Strategy
-passport.use(new GitHubStrategy({
-    clientID: process.env['GITHUB_APP_CLIENT_ID'],
-    clientSecret: process.env['GITHUB_APP_CLIENT_SECRET'],
-    callbackURL: process.env['GITHUB_APP_CALLBACK_URL'] + '/oauth/github/callback'
-  },
-  (accessToken, refreshToken, profile, done) => {
-    return done(null, profile);
-  }
-));
+passport.use(
+  new GitHubStrategy(
+    {
+      clientID: process.env["GITHUB_APP_CLIENT_ID"],
+      clientSecret: process.env["GITHUB_APP_CLIENT_SECRET"],
+      callbackURL:
+        process.env["GITHUB_APP_CALLBACK_URL"] + "/oauth/github/callback",
+    },
+    (accessToken, refreshToken, profile, done) => {
+      return done(null, profile);
+    }
+  )
+);
 
 // Auth Routes
-app.get("/oauth/github", passport.authenticate("github", { scope: ["user:email"], failureRedirect: "/" }));
+app.get(
+  "/oauth/github",
+  passport.authenticate("github", {
+    scope: ["user:email"],
+    failureRedirect: "/",
+  })
+);
 
-app.get("/oauth/github/callback",
-  async (req, res) => {
-    const code = req.query.code;
-    console.log('Auth code: ' + code);
+app.get("/oauth/github/callback", async (req, res) => {
+  const code = req.query.code;
+  console.log("Auth code: " + code);
 
-    if (!code) {
-      return res.status(400).send('Code not found');
-    }
+  if (!code) {
+    return res.status(400).send("Code not found");
+  }
 
-    try {
-      const result = await axios.post('https://github.com/login/oauth/access_token', {
-        client_id: process.env['GITHUB_APP_CLIENT_ID'],
-        client_secret: process.env['GITHUB_APP_CLIENT_SECRET'],
-        code: code
-      }, {
+  try {
+    const result = await axios.post(
+      "https://github.com/login/oauth/access_token",
+      {
+        client_id: process.env["GITHUB_APP_CLIENT_ID"],
+        client_secret: process.env["GITHUB_APP_CLIENT_SECRET"],
+        code: code,
+      },
+      {
         headers: {
-          'Accept': 'application/json'
-        }
-      });
+          Accept: "application/json",
+        },
+      }
+    );
 
-      console.log('[oauth/callback - Pre cookie update] Access Token:', result.data.access_token);
-      console.log('[oauth/callback - Pre cookie update] Refresh Token:', result.data.refresh_token);
+    console.log(
+      "[oauth/callback - Pre cookie update] Access Token:",
+      result.data.access_token
+    );
+    console.log(
+      "[oauth/callback - Pre cookie update] Refresh Token:",
+      result.data.refresh_token
+    );
 
-      // Store the tokens in the session or database
-      res.cookie('accessToken', result.data.access_token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
-      res.cookie('refreshToken', result.data.refresh_token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+    // Store the tokens in the session or database
+    res.cookie("accessToken", result.data.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+    });
+    res.cookie("refreshToken", result.data.refresh_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+    });
 
-      // log the access token to the console from cookie
-      // limitation: this will log to console after the user has auth'ed at least once, but does not break functionality
-      console.log('[oauth/callback - Post cookie update] Access Token:', req.cookies.accessToken);
-      console.log('[oauth/callback - Post cookie update] Refresh Token:', req.cookies.refreshToken);
+    // log the access token to the console from cookie
+    // limitation: this will log to console after the user has auth'ed at least once, but does not break functionality
+    console.log(
+      "[oauth/callback - Post cookie update] Access Token:",
+      req.cookies.accessToken
+    );
+    console.log(
+      "[oauth/callback - Post cookie update] Refresh Token:",
+      req.cookies.refreshToken
+    );
 
-      res.redirect("/");
-    } catch (error) {
-      console.error('Error exchanging code for access token:', error);
-      res.status(500).send('Error exchanging code for access token');
+    const repoName = `my-${req.session.projectDetails[0].toLowerCase()}-${req.session.projectDetails[1].toLowerCase()}-app`
+
+    const yamlType = getYamlType(req.session.projectDetails[0], req.session.projectDetails[1])
+
+    await createRepo(req.cookies.accessToken, repoName, false);
+
+    const pubKey = await getPubKey(req.cookies.accessToken, repoName);
+    console.log("Public key:", pubKey);
+
+    // Step 2: Prepare encryption buffers
+    const messageBuffer = Buffer.from(req.session.vercelApiKey); // Convert secret to Buffer
+    const encryptedToken = Buffer.alloc(
+        sodium.crypto_box_SEALBYTES + messageBuffer.length
+    );
+
+    // Step 3: Encrypt the secret using the repo's public key
+    const pubKeyBuffer = Buffer.from(pubKey.key, "base64"); // Decode base64 public key
+    sodium.crypto_box_seal(encryptedToken, messageBuffer, pubKeyBuffer);
+
+    console.log("Encrypted token (Base64):", encryptedToken.toString("base64"));
+
+    // Step 4: Set the secret in the GitHub repository
+    await setSecret(
+        req.cookies.accessToken,
+        repoName,
+        "VERCEL_TOKEN",
+        encryptedToken.toString("base64"), // Send encrypted secret
+        pubKey.key_id
+    );
+
+    console.log("✅ Vercel token securely set in GitHub Secrets.");
+
+    await commit(req.cookies.accessToken, repoName, `.github/workflows/${yamlType}`, fs.readFileSync(`./deployment-configs/${yamlType}`, { encoding: "base64" }), "Add deployment workflow");
+
+
+    res.redirect("/");
+  } catch (error) {
+    console.error("Error exchanging code for access token:", error);
+    res.status(500).send("Error exchanging code for access token");
+  }
+});
+
+function getYamlType(frontend, backend) {
+    if (frontend === "react" && backend === "node.js") {
+        return "deploy-react-node.yaml";
+    } else if (frontend === "react" && backend === "flask") {
+        return "deploy-react-flask.yaml";
+    } else {
+        return "deploy-react-node.yaml";
     }
-  });
+}
 
 // Middleware to check and refresh access token if expired
 /**
@@ -91,34 +185,44 @@ app.get("/oauth/github/callback",
  * @param {Function} next - The next middleware function.
  */
 async function checkAndRefreshToken(req, res, next) {
-  const accessToken = cookies('accessToken');
-  const refreshToken = cookies('refreshToken');
+  const accessToken = cookies("accessToken");
+  const refreshToken = cookies("refreshToken");
 
-  console.log('[checkAndRefreshToken] Access Token:', accessToken);
-  console.log('[checkAndRefreshToken] Refresh Token:', refreshToken);
+  console.log("[checkAndRefreshToken] Access Token:", accessToken);
+  console.log("[checkAndRefreshToken] Refresh Token:", refreshToken);
 
   if (accessToken && refreshToken) {
     if (await isTokenExpired(accessToken)) {
       try {
-        const result = await axios.post('https://github.com/login/oauth/access_token', {
-          client_id: process.env['GITHUB_APP_CLIENT_ID'],
-          client_secret: process.env['GITHUB_APP_CLIENT_SECRET'],
-          refresh_token: refreshToken,
-          grant_type: 'refresh_token'
-        }, {
-          headers: {
-            'Accept': 'application/json'
+        const result = await axios.post(
+          "https://github.com/login/oauth/access_token",
+          {
+            client_id: process.env["GITHUB_APP_CLIENT_ID"],
+            client_secret: process.env["GITHUB_APP_CLIENT_SECRET"],
+            refresh_token: refreshToken,
+            grant_type: "refresh_token",
+          },
+          {
+            headers: {
+              Accept: "application/json",
+            },
           }
-        });
+        );
 
         const { access_token } = result.data.access_token;
         const { refresh_token } = result.data.refresh_token;
 
-        res.cookie('accessToken', access_token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
-        res.cookie('refreshToken', refresh_token, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
+        res.cookie("accessToken", access_token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+        });
+        res.cookie("refreshToken", refresh_token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+        });
       } catch (error) {
-        console.error('Error refreshing access token:', error.response?.data);
-        return res.status(500).send('Error refreshing access token');
+        console.error("Error refreshing access token:", error.response?.data);
+        return res.status(500).send("Error refreshing access token");
       }
     }
   }
@@ -130,15 +234,14 @@ async function isTokenExpired(token) {
   // Check if token is expired by querying https://api.github.com/orgs/google/repos
   // If the response is 401, then the token is expired
   console.log("[isTokenExpired] Checking if token is expired");
-  const result = await axios.get('https://api.github.com/orgs/google/repos', {
+  const result = await axios.get("https://api.github.com/orgs/google/repos", {
     headers: {
-      'Accept': 'application/json',
+      Accept: "application/json",
       // 'Authorization': `Bearer ${token}`
-      'Authorization': 'Bearer asjdkhaskjdahksdjahksjdh'
-    }
+      Authorization: "Bearer asjdkhaskjdahksdjahksjdh",
+    },
   });
   return result.status === 401;
-  
 }
 
 // Use the middleware for routes that require authentication
@@ -165,32 +268,33 @@ app.get("/", (req, res) => {
 // });
 
 app.post("/send-project-details", (req, res) => {
-    const { frontend, backend, deployment } = req.body;
-    console.log("Frontend:", frontend, typeof frontend);
-    console.log("Backend:", backend, typeof backend);
-    console.log("Deployment:", deployment, typeof deployment);
-    res.send("Project details received");
-    });
+  const { frontend, backend, vercelApiKey } = req.body;
 
-app.post("/api/oauth-token", async (req, res) => {
-    const { code } = req.body;
+  req.session.projectDetails = [frontend, backend];
+  req.session.vercelApiKey = vercelApiKey;
 
-    const response = await axios.post(
-      "https://api.vercel.com/v2/oauth/access_token",
-      new URLSearchParams({
-        code: code,
-        client_id: process.env.VERCEL_CLIENT_ID,
-        client_secret: process.env.VERCEL_CLIENT_SECRET,
-        redirect_uri: `${process.env.GITHUB_APP_CALLBACK_URL}/`,
-      })
-    );
+  res.send("Project details received");
+});
 
-    req.session.vercelAccessToken = response.data.access_token;
+// app.post("/api/oauth-token", async (req, res) => {
+//     const { code } = req.body;
 
-    console.log(req.session.vercelAccessToken)
+//     const response = await axios.post(
+//       "https://api.vercel.com/v2/oauth/access_token",
+//       new URLSearchParams({
+//         code: code,
+//         client_id: process.env.VERCEL_CLIENT_ID,
+//         client_secret: process.env.VERCEL_CLIENT_SECRET,
+//         redirect_uri: `${process.env.GITHUB_APP_CALLBACK_URL}/`,
+//       })
+//     );
 
-    res.redirect('/');
-  });
+//     req.session.vercelAccessToken = response.data.access_token;
+
+//     console.log(req.session.vercelAccessToken)
+
+//     res.redirect('/');
+//   });
 
 // API endpoint
 app.get("/api/products", async (req, res) => {
@@ -198,14 +302,14 @@ app.get("/api/products", async (req, res) => {
     const response = await axios.get("https://fakestoreapi.com/products");
     res.send(response.data);
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch products' });
+    res.status(500).json({ error: "Failed to fetch products" });
   }
 });
 
 // Error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).send('Something broke!');
+  res.status(500).send("Something broke!");
 });
 
 const PORT = process.env.PORT || 4000;
