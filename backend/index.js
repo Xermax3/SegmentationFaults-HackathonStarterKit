@@ -169,8 +169,10 @@ function getYamlType(frontend, backend) {
         return "deploy-react-node.yaml";
     } else if (frontend === "react" && backend === "flask") {
         return "deploy-react-flask.yaml";
+    } else if (frontend === "angular" && backend === "node.js") {
+        return "deploy-angular-node.yaml";
     } else {
-        return "deploy-react-node.yaml";
+        return "deploy-angular-flask.yaml";
     }
 }
 
