@@ -43,6 +43,25 @@ jobs:
           git clone --depth=1 https://github.com/iyers16/template-node.git backend
           rm -rf backend/.git
 
+      - name: Add vercel.json to the root of the project
+        run: |
+          echo '{
+            "version": 2,
+            "builds": [
+              {
+                "src": "backend/server.js",
+                "use": "@vercel/node"
+              }
+            ],
+            "routes": [
+              {
+                "src": "/(.*)",
+                "dest": "backend/server.js"
+              }
+            ],
+            "buildCommand": "npm install --prefix backend && npm install --prefix frontend && npm run build --prefix frontend"
+          }' > vercel.json
+
       - name: Install dependencies for frontend and backend
         run: |
           cd frontend && npm install && cd ..
